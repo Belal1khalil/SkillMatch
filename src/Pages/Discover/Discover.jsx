@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { discoverPersons } from "../../services/profile-services";
-import { 
-  faUsersSlash, 
-  faRocket, 
-  faSearch, 
-  faFilter, 
-
+import {
+  faUsersSlash,
+  faRocket,
+  faSearch,
   faUsers,
   faCompass,
-  faBolt
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import UserCard from "../../Components/UserCard/UserCard";
@@ -16,6 +13,7 @@ import UserCard from "../../Components/UserCard/UserCard";
 export default function Discover() {
   const [discoveredPersons, setDiscoveredPersons] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -30,6 +28,15 @@ export default function Discover() {
       });
   }, []);
 
+  const filteredPersons = discoveredPersons.filter((person) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      person.username?.toLowerCase().includes(query) ||
+      person.email?.toLowerCase().includes(query) 
+    
+    );
+  });
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-8 bg-gray-50/50">
@@ -40,7 +47,9 @@ export default function Discover() {
           </div>
         </div>
         <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">Syncing Network...</h2>
+          <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">
+            Syncing Network...
+          </h2>
           <div className="flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce"></span>
             <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
@@ -63,20 +72,6 @@ export default function Discover() {
         </div>
 
         <div className="container relative z-10 text-center mx-auto px-4">
-          <div className="inline-flex items-center gap-3 px-6 py-2.5 bg-gray-900 text-white rounded-full text-[10px] font-black uppercase tracking-[0.25em] mb-10 animate-in fade-in zoom-in duration-700 shadow-2xl shadow-gray-900/20">
-            <FontAwesomeIcon icon={faBolt} className="text-yellow-400" />
-            Network Discovery Active
-          </div>
-          
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black text-gray-900 mb-10 tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-8 duration-700">
-            Find Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-violet-600 to-indigo-600">Perfect Match</span>
-          </h1>
-          
-          <p className="max-w-2xl mx-auto text-gray-500 text-xl font-medium leading-relaxed mb-16 animate-in fade-in slide-in-from-bottom-10 duration-1000">
-            Explore a curated community of experts, collaborators, and visionaries ready to help you reach the next level.
-          </p>
-
           {/* Search Bar Container */}
           <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-12 duration-1000 px-2">
             <div className="bg-white p-4 rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col md:flex-row items-center gap-4">
@@ -84,21 +79,13 @@ export default function Discover() {
                 <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none text-gray-400 group-focus-within:text-primary-500 transition-colors">
                   <FontAwesomeIcon icon={faSearch} className="text-xl" />
                 </div>
-                <input 
-                  type="text" 
-                  placeholder="Search by name, expertise, or location..." 
+                <input
+                  type="text"
+                  placeholder="Search by name, expertise, or location..."
                   className="w-full pl-16 pr-8 py-6 bg-transparent outline-none text-gray-800 font-bold placeholder-gray-400 text-xl"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              </div>
-              <div className="flex items-center gap-4 w-full md:w-auto">
-                <button className="flex-1 md:flex-none px-10 py-6 bg-gray-50 text-gray-600 font-black rounded-[2.5rem] hover:bg-gray-100 transition-all flex items-center justify-center gap-3 border border-gray-100">
-                  <FontAwesomeIcon icon={faFilter} className="text-xs" />
-                  Filters
-                </button>
-                <button className="flex-[2] md:flex-none px-14 py-6 bg-primary-600 text-white font-black rounded-[2.5rem] hover:bg-primary-700 shadow-2xl shadow-primary-500/40 transition-all active:scale-95 flex items-center justify-center gap-4 uppercase tracking-widest text-sm">
-                  <FontAwesomeIcon icon={faCompass} className="animate-spin-slow" />
-                  Explore
-                </button>
               </div>
             </div>
           </div>
@@ -119,53 +106,68 @@ export default function Discover() {
               </h3>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em]">Real-time Talent Sync</p>
+                <p className="text-gray-400 font-bold text-xs uppercase tracking-[0.2em]">
+                  Real-time Talent Sync
+                </p>
               </div>
             </div>
           </div>
           <div className="flex items-center">
             <div className="text-sm font-black text-primary-600 bg-white px-8 py-4 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-200/40 flex items-center gap-3">
               <span className="w-2 h-2 bg-primary-600 rounded-full"></span>
-              {discoveredPersons?.length || 0} Professionals Found
+              {filteredPersons?.length || 0} Professionals Found
             </div>
           </div>
         </div>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
-          {discoveredPersons && discoveredPersons.length > 0 ? (
-            discoveredPersons.map((person) => (
+          {filteredPersons.length > 0 ? (
+            filteredPersons.map((person) => (
               <UserCard key={person._id} userInfo={person} />
             ))
           ) : (
-            <div className="col-span-full flex flex-col items-center justify-center py-32 px-4 bg-white rounded-[5rem] border-2 border-dashed border-gray-100 shadow-[inset_0_20px_40px_rgba(0,0,0,0.02)] overflow-hidden relative group">
-              {/* Animated Background Pulse */}
-              <div className="absolute inset-0 bg-primary-50/40 scale-0 group-hover:scale-110 transition-transform duration-1000 rounded-full blur-[120px]"></div>
-              
-              <div className="relative z-10 flex flex-col items-center">
-                <div className="w-48 h-48 bg-gray-50 rounded-[4rem] flex items-center justify-center mb-12 relative shadow-inner">
-                  <div className="absolute inset-0 bg-primary-100 rounded-[4rem] scale-0 group-hover:scale-110 transition-transform duration-700 opacity-25"></div>
-                  <FontAwesomeIcon icon={faUsersSlash} className="text-7xl text-gray-200 group-hover:text-primary-300 transition-all duration-700" />
-                </div>
-                <div className="text-center max-w-lg">
-                  <h2 className="text-5xl font-black text-gray-900 mb-6 tracking-tighter">
-                    Nothing found.
-                  </h2>
-                  <p className="text-gray-400 font-bold leading-relaxed mb-12 text-xl">
-                    We couldn't find anyone matching your criteria at the moment. Don't worry, the network grows every day!
-                  </p>
-                  <button 
-                    onClick={() => window.location.reload()}
-                    className="group/btn px-16 py-6 bg-gray-900 text-white font-black rounded-[3rem] shadow-2xl shadow-gray-900/20 hover:bg-black transition-all active:scale-95 flex items-center gap-5 mx-auto"
-                  >
-                    <FontAwesomeIcon icon={faRocket} className="text-xl group-hover/btn:translate-x-2 transition-transform" />
-                    Re-scan Network
-                  </button>
-                </div>
-              </div>
-            </div>
+            <NotFound />
           )}
         </div>
       </div>
     </div>
   );
 }
+
+const NotFound = () => {
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center py-32 px-4 bg-white rounded-[5rem] border-2 border-dashed border-gray-100 shadow-[inset_0_20px_40px_rgba(0,0,0,0.02)] overflow-hidden relative group">
+      {/* Animated Background Pulse */}
+      <div className="absolute inset-0 bg-primary-50/40 scale-0 group-hover:scale-110 transition-transform duration-1000 rounded-full blur-[120px]"></div>
+
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="w-48 h-48 bg-gray-50 rounded-[4rem] flex items-center justify-center mb-12 relative shadow-inner">
+          <div className="absolute inset-0 bg-primary-100 rounded-[4rem] scale-0 group-hover:scale-110 transition-transform duration-700 opacity-25"></div>
+          <FontAwesomeIcon
+            icon={faUsersSlash}
+            className="text-7xl text-gray-200 group-hover:text-primary-300 transition-all duration-700"
+          />
+        </div>
+        <div className="text-center max-w-lg">
+          <h2 className="text-5xl font-black text-gray-900 mb-6 tracking-tighter">
+            Nothing found.
+          </h2>
+          <p className="text-black font-bold leading-relaxed mb-12 text-xl">
+            We couldn't find anyone matching your criteria at the moment. Don't
+            worry, the network grows every day!
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="group/btn px-16 py-6 bg-gray-900 text-white font-black rounded-[3rem] shadow-2xl shadow-gray-900/20 hover:bg-black transition-all active:scale-95 flex items-center gap-5 mx-auto"
+          >
+            <FontAwesomeIcon
+              icon={faRocket}
+              className="text-xl group-hover/btn:translate-x-2 transition-transform"
+            />
+            Re-scan Network
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};

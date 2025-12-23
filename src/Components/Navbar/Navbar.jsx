@@ -8,19 +8,20 @@ import {
   faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
-import { use, useContext, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
+import { getProfileData } from "../../services/profile-services";
 
 export default function Navbar() {
   const [activeLink, setActiveLink] = useState("discover");
   const [isMenuopen, setIsMenuOpen] = useState(false);
   const { token, Logout } = useContext(AuthContext);
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState("Guest");
+  
 
-  const location = useLocation();
-  const email = location.state?.email || "Guest";
-
-
+  
 
   function toggleMenu() {
     setIsMenuOpen(!isMenuopen);
@@ -37,6 +38,18 @@ export default function Navbar() {
       href: "/notifications",
     },
   ];
+  useEffect( () => {
+    getProfileData()
+      .then((res) => {
+    
+        const theUser = res.data?.data?.user
+        setUser(theUser);
+        setEmail(theUser.email)
+      })
+      .catch((error) => {
+        console.error("Profile fetch error:", error);
+      });
+  }, []);
 
   return (
     <>
@@ -60,22 +73,24 @@ export default function Navbar() {
           </div>
 
           {/* Enhanced Search Bar */}
-          <div className="hidden lg:block search flex-1 max-w-xl">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-400/20 to-primary-600/20 rounded-xl blur-sm opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center">
-                <FontAwesomeIcon
-                  icon={faSearch}
-                  className="absolute left-4 text-gray-400 group-focus-within:text-primary-500 transition-colors duration-300"
-                />
-                <input
-                  type="search"
-                  placeholder="Search opportunities, skills, people..."
-                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-primary-400 focus:bg-white focus:shadow-lg transition-all duration-300 placeholder:text-gray-400"
-                />
+          {token && (
+            <div className="hidden lg:block search flex-1 max-w-xl">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-400/20 to-primary-600/20 rounded-xl blur-sm opacity-0 group-focus-within:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center">
+                  <FontAwesomeIcon
+                    icon={faSearch}
+                    className="absolute left-4 text-gray-400 group-focus-within:text-primary-500 transition-colors duration-300"
+                  />
+                  <input
+                    type="search"
+                    placeholder="Search opportunities, skills, people..."
+                    className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-white/50 backdrop-blur-sm focus:outline-none focus:border-primary-400 focus:bg-white focus:shadow-lg transition-all duration-300 placeholder:text-gray-400"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Navigation Links with Tooltips */}
           {token && (
@@ -134,7 +149,7 @@ export default function Navbar() {
                       {/* User Info Section */}
                       <div className="px-4 py-3 bg-gradient-to-br from-primary-50 to-primary-100/50 border-b border-gray-200">
                         <p className="text-sm text-gray-600 truncate">
-                         {email}
+                          {email}
                         </p>
                       </div>
 
@@ -188,7 +203,7 @@ export default function Navbar() {
                         <Link
                           to="/login"
                           onClick={() => {
-                           Logout();
+                            Logout();
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200"
                         >
@@ -294,7 +309,7 @@ export default function Navbar() {
                     {navItems.map((item) => (
                       <li key={item.id}>
                         <Link
-                        to={`${item.href}`}
+                          to={`${item.href}`}
                           // href={item.href}
                           onClick={() => {
                             setActiveLink(item.id);
@@ -333,8 +348,9 @@ export default function Navbar() {
 
               {/* Profile Section */}
               {token && (
-                <a
-                  href="/profile"
+                <Link
+                onClick={toggleMenu}
+                  to="/profile"
                   className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300"
                 >
                   <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -359,7 +375,7 @@ export default function Navbar() {
                       d="M9 5l7 7-7 7"
                     />
                   </svg>
-                </a>
+                </Link>
               )}
 
               {/* Divider */}

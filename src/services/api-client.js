@@ -5,14 +5,17 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
+   
   const token =
     localStorage.getItem("userToken") || sessionStorage.getItem("userToken");
 
   if (token) {
     config.headers.token = token;
+   
     config.headers.Authorization = `Bearer ${token}`;
 
   }
+  // console.log(config.headers.Authorization)
   return config;
 });
 

@@ -31,16 +31,30 @@ export default function App() {
         { path: "forgot-password", element: <ForgetPassword /> },
         { path: "verifyResetCode", element: <VerifyResetCode /> },
         { path: "resetPassword", element: <ResetPassword /> },
-        { path: "profile", element:
-          <ProtectedRoute>
-             <Profile />
-          </ProtectedRoute>
-          
-          },
-        { path: "discover", element: <Discover /> },
-        { path: "recommended", element: <ProtectedRoute>
-           <RecommenedJobs />
-        </ProtectedRoute> },
+        {
+          path: "profile",
+          element: (
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "discover",
+          element: (
+            <ProtectedRoute>
+              <Discover />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "recommended",
+          element: (
+            <ProtectedRoute>
+              <RecommenedJobs />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
   ]);
