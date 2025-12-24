@@ -16,6 +16,9 @@ import Profile from "./Pages/Profile/Profile";
 import ProtectedRoute from "./Components/ProtectedRoute/ProtectedRoute";
 import Discover from "./Pages/Discover/Discover";
 import RecommenedJobs from "./Pages/RecommendedJobs/RecommenedJobs";
+import Jobs from "./Pages/Jobs/Jobs";
+import OpportunityDetails from "./Pages/OpportunityDetails/OpportunityDetails";
+import OpportunityProvider from "./Components/Context/OpportunityContext";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -55,20 +58,37 @@ export default function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "Jobs",
+          element: (
+            <ProtectedRoute>
+              <Jobs />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "/opportunities/:id",
+          element: (
+            <ProtectedRoute>
+              <OpportunityDetails />
+            </ProtectedRoute>
+          ),
+        },
       ],
     },
   ]);
   return (
     <>
       <AuthProvider>
-        <RouterProvider router={router} />
-
-        <ToastContainer
-          position="top-right"
-          closeButton={false}
-          autoClose={3000}
-          closeOnClick={true}
-        />
+        <OpportunityProvider>
+          <RouterProvider router={router} />
+          <ToastContainer
+            position="top-right"
+            closeButton={false}
+            autoClose={3000}
+            closeOnClick={true}
+          />
+        </OpportunityProvider>
       </AuthProvider>
     </>
   );

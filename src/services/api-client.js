@@ -2,6 +2,7 @@ import axios from "axios";
 
 export const apiClient = axios.create({
   baseURL: "https://skillmatch.elmihy.me/api",
+  // baseURL: "http://localhost:3000/api",
 });
 
 apiClient.interceptors.request.use((config) => {

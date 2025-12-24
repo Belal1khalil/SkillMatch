@@ -29,7 +29,8 @@ export default function Navbar() {
 
   const navItems = [
     { id: "discover", icon: faUsers, label: "Discover", href: "/discover" },
-    { id: "jobs", icon: faBriefcase, label: "Jobs", href: "/recommended" },
+    { id: "recommendjobs", icon: faBriefcase, label: "RecommendJobs", href: "/recommended" },
+    { id: "jobs", icon: faBriefcase, label: "Jobs", href: "/Jobs" },
     { id: "saved", icon: faHeart, label: "Saved", href: "/saved" },
     {
       id: "notifications",
