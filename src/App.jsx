@@ -19,6 +19,8 @@ import RecommenedJobs from "./Pages/RecommendedJobs/RecommenedJobs";
 import Jobs from "./Pages/Jobs/Jobs";
 import OpportunityDetails from "./Pages/OpportunityDetails/OpportunityDetails";
 import OpportunityProvider from "./Components/Context/OpportunityContext";
+import SavedOpportunities from "./Pages/SavedOpportunities/SavedOpportunities";
+import MyApplications from "./Pages/MyAppllications/MyApplications";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -74,6 +76,22 @@ export default function App() {
             </ProtectedRoute>
           ),
         },
+        {
+          path: "saved",
+          element: (
+            <ProtectedRoute>
+              <SavedOpportunities />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "applications",
+          element: (
+            <ProtectedRoute>
+                <MyApplications/>
+            </ProtectedRoute>
+          ),
+        }
       ],
     },
   ]);

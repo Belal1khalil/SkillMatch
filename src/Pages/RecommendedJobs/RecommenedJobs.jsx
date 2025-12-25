@@ -23,7 +23,7 @@ export default function RecommenedJobs() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isVisible, setIsVisible] = useState(false);
-  const { handleSaveopportunity, savedOpportunities } = useContext(opportunityContext);
+  const { handleSaveopportunity, savedOpportunities , handleUnSaveopportunity , handleApplyOpportunity  , appliedJobs} = useContext(opportunityContext);
 
   useEffect(() => {
     setIsVisible(true);
@@ -168,7 +168,12 @@ export default function RecommenedJobs() {
                       savedOpportunities[job._id] ? "text-red-500" : "w-10 h-10 bg-gray-50 text-gray-300 hover:text-primary-500 transition-colors rounded-xl flex items-center justify-center"
                     }`}>
                     <FontAwesomeIcon icon={faBookmark} onClick={()=>{
-                     handleSaveopportunity(job._id)
+                 
+                     if(savedOpportunities[job._id]) {
+                      handleUnSaveopportunity(job._id)
+                     }else {
+                      handleSaveopportunity(job._id)
+                     }
                     }} />
                   </button>
                   <Link to={`/opportunities/${job._id}`}>
@@ -221,8 +226,26 @@ export default function RecommenedJobs() {
                   </div>
                 </div>
 
-                <button className="w-full py-5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-600/30 transition-all active:scale-95 relative z-10">
-                  Apply for this position
+                <button 
+                  onClick={()=>{
+                    if(!appliedJobs[job._id]) {
+                      handleApplyOpportunity(job._id)
+                    }
+                  }} 
+                  disabled={appliedJobs[job._id]}
+                  className={`w-full py-5 text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl transition-all active:scale-95 relative z-10 ${
+                    appliedJobs[job._id] === 'rejected' ? "bg-red-600 text-white shadow-xl shadow-red-600/30 cursor-default" :
+                    appliedJobs[job._id] === 'accepted' ? "bg-emerald-600 text-white shadow-xl shadow-emerald-600/30 cursor-default" :
+                    appliedJobs[job._id] 
+                      ? "bg-green-600 text-white shadow-xl shadow-green-600/30 cursor-default" 
+                      : "bg-gray-900 text-white hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-600/30"
+                  }`}
+                >
+                  {
+                    appliedJobs[job._id] 
+                      ? (typeof appliedJobs[job._id] === 'string' ? appliedJobs[job._id] : "Applied") 
+                      : "Apply for this position"
+                  }
                 </button>
               </div>
             ))}

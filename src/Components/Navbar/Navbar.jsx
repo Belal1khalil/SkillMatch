@@ -134,100 +134,99 @@ export default function Navbar() {
                   </li>
                 ))}
 
-                {/* Profile Avatar with Dropdown */}
-                <li className="relative group ml-2">
-                  <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105">
-                    <FontAwesomeIcon icon={faUser} className="text-lg" />
-                  </button>
-
-                  {/* Dropdown Menu */}
-                  <div className="absolute top-full right-0 mt-3 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:mt-2 transition-all duration-200 z-50">
-                    {/* Arrow */}
-                    <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
-
-                    {/* Menu Card */}
-                    <div className="relative backdrop-blur-xl bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
-                      {/* User Info Section */}
-                      <div className="px-4 py-3 bg-gradient-to-br from-primary-50 to-primary-100/50 border-b border-gray-200">
-                        <p className="text-sm text-gray-600 truncate">
-                          {email}
-                        </p>
-                      </div>
-
-                      {/* Menu Items */}
-                      <div className="py-2">
-                        <Link
-                          to="/profile"
-                          className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
-                        >
-                          <FontAwesomeIcon
-                            icon={faUser}
-                            className="text-primary-500 w-4"
-                          />
-                          <span className="font-medium text-sm">
-                            Your Profile
-                          </span>
-                        </Link>
-
-                        <a
-                          href="/applications"
-                          className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
-                        >
-                          <FontAwesomeIcon
-                            icon={faBriefcase}
-                            className="text-primary-500 w-4"
-                          />
-                          <span className="font-medium text-sm">
-                            My Applications
-                          </span>
-                        </a>
-
-                        <a
-                          href="/personalized"
-                          className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
-                        >
-                          <FontAwesomeIcon
-                            icon={faHeart}
-                            className="text-primary-500 w-4"
-                          />
-                          <span className="font-medium text-sm">
-                            Personalized Opportunities
-                          </span>
-                        </a>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mx-2"></div>
-
-                      {/* Sign Out */}
-                      <div className="py-2">
-                        <Link
-                          to="/login"
-                          onClick={() => {
-                            Logout();
-                          }}
-                          className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200"
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                            />
-                          </svg>
-                          <span className="font-medium text-sm">Sign out</span>
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </li>
               </ul>
+            </div>
+          )}
+
+          {/* Profile Avatar with Dropdown - Visible on all screens */}
+          {token && (
+            <div className="relative group ml-auto lg:ml-2">
+              <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105">
+                <FontAwesomeIcon icon={faUser} className="text-lg" />
+              </button>
+
+              {/* Dropdown Menu */}
+              <div className="absolute top-full right-0 mt-3 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:mt-2 transition-all duration-200 z-50">
+                {/* Arrow */}
+                <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
+
+                {/* Menu Card */}
+                <div className="relative backdrop-blur-xl bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+                  {/* User Info Section */}
+                  <div className="px-4 py-3 bg-gradient-to-br from-primary-50 to-primary-100/50 border-b border-gray-200">
+                    <p className="text-sm text-gray-600 truncate">{email}</p>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="py-2">
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
+                    >
+                      <FontAwesomeIcon
+                        icon={faUser}
+                        className="text-primary-500 w-4"
+                      />
+                      <span className="font-medium text-sm">Your Profile</span>
+                    </Link>
+
+                    <a
+                      href="/applications"
+                      className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
+                    >
+                      <FontAwesomeIcon
+                        icon={faBriefcase}
+                        className="text-primary-500 w-4"
+                      />
+                      <span className="font-medium text-sm">
+                        My Applications
+                      </span>
+                    </a>
+
+                    <a
+                      href="/personalized"
+                      className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
+                    >
+                      <FontAwesomeIcon
+                        icon={faHeart}
+                        className="text-primary-500 w-4"
+                      />
+                      <span className="font-medium text-sm">
+                        Personalized Opportunities
+                      </span>
+                    </a>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mx-2"></div>
+
+                  {/* Sign Out */}
+                  <div className="py-2">
+                    <Link
+                      to="/login"
+                      onClick={() => {
+                        Logout();
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
+                      <span className="font-medium text-sm">Sign out</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
