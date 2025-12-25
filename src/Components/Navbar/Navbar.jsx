@@ -16,6 +16,7 @@ import { getProfileData } from "../../services/profile-services";
 export default function Navbar() {
   const [activeLink, setActiveLink] = useState("discover");
   const [isMenuopen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { token, Logout } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("Guest");
@@ -141,12 +142,15 @@ export default function Navbar() {
           {/* Profile Avatar with Dropdown - Visible on all screens */}
           {token && (
             <div className="relative group ml-auto lg:ml-2">
-              <button className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105">
+              <button 
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300 hover:scale-105"
+              >
                 <FontAwesomeIcon icon={faUser} className="text-lg" />
               </button>
 
               {/* Dropdown Menu */}
-              <div className="absolute top-full right-0 mt-3 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:mt-2 transition-all duration-200 z-50">
+              <div className={`absolute top-full right-0 mt-3 w-56 transition-all duration-200 z-50 ${isProfileOpen ? "opacity-100 visible mt-2" : "opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:mt-2"}`}>
                 {/* Arrow */}
                 <div className="absolute -top-2 right-4 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
 
@@ -161,6 +165,7 @@ export default function Navbar() {
                   <div className="py-2">
                     <Link
                       to="/profile"
+                      onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
                     >
                       <FontAwesomeIcon
@@ -170,8 +175,9 @@ export default function Navbar() {
                       <span className="font-medium text-sm">Your Profile</span>
                     </Link>
 
-                    <a
-                      href="/applications"
+                    <Link
+                      to="/applications"
+                      onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
                     >
                       <FontAwesomeIcon
@@ -181,10 +187,11 @@ export default function Navbar() {
                       <span className="font-medium text-sm">
                         My Applications
                       </span>
-                    </a>
+                    </Link>
 
-                    <a
-                      href="/personalized"
+                    <Link
+                      to="/personalized"
+                      onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
                     >
                       <FontAwesomeIcon
@@ -194,7 +201,7 @@ export default function Navbar() {
                       <span className="font-medium text-sm">
                         Personalized Opportunities
                       </span>
-                    </a>
+                    </Link>
                   </div>
 
                   {/* Divider */}
@@ -206,6 +213,7 @@ export default function Navbar() {
                       to="/login"
                       onClick={() => {
                         Logout();
+                        setIsProfileOpen(false);
                       }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors duration-200"
                     >
