@@ -108,7 +108,7 @@ export default function Navbar() {
                 className="w-12 h-12 relative z-10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
               />
             </div>
-            <a href="/" className="relative">
+            <a href="/dashboard" className="relative">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-600 to-primary-400 bg-clip-text text-transparent transition-all duration-300 group-hover:from-primary-500 group-hover:to-primary-600">
                 SkillMatch
               </h1>
