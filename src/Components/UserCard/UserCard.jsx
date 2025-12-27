@@ -1,12 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
-import { faLink, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faClock, faEnvelope } from '@fortawesome/free-regular-svg-icons';
+import { faCheck, faEye, faLink, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { getSpecificUser } from '../../services/profile-services';
+import { Link } from 'react-router-dom';
+import { sendConnectionRequest } from '../../services/connection-services';
+import { toast } from 'react-toastify';
 
-export default function UserCard({ userInfo, onConnect }) {
- 
+export default function UserCard({ userInfo, onConnect, onConnectionSent }) {
+  const [connectionStatus, setConnectionStatus] = useState(userInfo?.connectionStatus || null);
+  const [isLoading, setIsLoading] = useState(false);
 
   if (!userInfo) return null;
+  
+  async function handleSendConnection(id) {
+    try {
+      setIsLoading(true);
+      const response = await sendConnectionRequest(id);
+      if (response.success) {
+        setConnectionStatus(response.data.connection.status);
+        toast.success(response.data.message || 'Connection request sent!');
+        // Remove user from discover list
+        if (onConnectionSent) {
+          onConnectionSent(id);
+        }
+      }
+      console.log(response);
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.error.response?.data?.message );
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
 
   return (
     <section className="p-2">
@@ -45,17 +72,32 @@ export default function UserCard({ userInfo, onConnect }) {
           {/* Action Buttons */}
           <div className="flex gap-3 w-full">
             <button
-              onClick={() => onConnect && onConnect(userInfo._id)}
-              className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm"
+              onClick={() => handleSendConnection(userInfo._id)}
+              disabled={connectionStatus === 'pending' || isLoading}
+              className={`flex-1 font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm ${
+                connectionStatus === 'pending'
+                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-yellow-500/20 cursor-not-allowed'
+                  : connectionStatus === 'accepted'
+                  ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-500/20'
+                  : 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-500/20 active:scale-95'
+              }`}
             >
-              <FontAwesomeIcon icon={faUserPlus} className="text-xs" />
-              Connect
+              <FontAwesomeIcon icon={connectionStatus === "pending" ? faClock :connectionStatus === "accepted"? faCheck :faUserPlus}  className="text-xs" />
+              {isLoading
+                ? 'Sending...'
+                : connectionStatus === 'pending'
+                ? 'Pending'
+                : connectionStatus === 'accepted'
+                ? 'Connected'
+                : 'Connect'}
             </button>
             <button
               className="w-12 h-12 bg-gray-50 text-gray-400 hover:bg-primary-50 hover:text-primary-600 rounded-xl transition-all flex items-center justify-center active:scale-90"
               title="View Profile"
             >
-              <FontAwesomeIcon icon={faLink} className="text-xs" />
+              <Link to={`/profile/${userInfo._id}`}>
+              <FontAwesomeIcon icon={faEye}  className="text-xs" />
+              </Link>
             </button>
           </div>
         </div>

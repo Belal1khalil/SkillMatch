@@ -15,10 +15,12 @@ export default function Discover() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+
   useEffect(() => {
     setLoading(true);
     discoverPersons()
       .then((res) => {
+        console.log(res)
         setDiscoveredPersons(res.data.users);
         setLoading(false);
       })
@@ -28,14 +30,19 @@ export default function Discover() {
       });
   }, []);
 
-  const filteredPersons = discoveredPersons.filter((person) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      person.username?.toLowerCase().includes(query) ||
-      person.email?.toLowerCase().includes(query) 
-    
-    );
-  });
+  // Save sent connection IDs to localStorage whenever it changes
+
+
+  // Filter by search query only (don't filter out sent connections until refresh)
+  const filteredPersons = discoveredPersons
+    .filter((person) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        person.username?.toLowerCase().includes(query) ||
+        person.email?.toLowerCase().includes(query) 
+      
+      );
+    });
 
   if (loading) {
     return (
@@ -123,7 +130,10 @@ export default function Discover() {
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12">
           {filteredPersons.length > 0 ? (
             filteredPersons.map((person) => (
-              <UserCard key={person._id} userInfo={person} />
+              <UserCard 
+                key={person._id} 
+                userInfo={person} 
+              />
             ))
           ) : (
             <NotFound />

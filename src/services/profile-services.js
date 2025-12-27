@@ -116,3 +116,19 @@ export async  function DeleteProfile() {
     throw error;
   }
 }
+
+
+export async function getSpecificUser(id) {
+  try {
+    const options= {
+     url:`/auth/${id}`,
+     method:"GET",
+    };
+    const response = await apiClient.request(options);
+    console.log(response);
+    return response;
+  } catch (error) {
+    throw(error)
+  }
+  
+}

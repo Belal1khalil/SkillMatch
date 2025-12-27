@@ -12,6 +12,9 @@ import { use, useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import { getProfileData } from "../../services/profile-services";
+import { getAllnotifications } from "../../services/notificitions-services";
+import { faClock, faDotCircle } from "@fortawesome/free-solid-svg-icons";
+import { formatDistanceToNow } from "date-fns";
 
 export default function Navbar() {
   const [activeLink, setActiveLink] = useState("discover");
@@ -20,6 +23,9 @@ export default function Navbar() {
   const { token, Logout } = useContext(AuthContext);
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("Guest");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifLoading, setIsNotifLoading] = useState(false);
   
 
   
@@ -40,18 +46,53 @@ export default function Navbar() {
       href: "/notifications",
     },
   ];
-  useEffect( () => {
+  useEffect(() => {
     getProfileData()
       .then((res) => {
-    
-        const theUser = res.data?.data?.user
+        const theUser = res.data?.data?.user;
         setUser(theUser);
-        setEmail(theUser.email)
+        setEmail(theUser.email);
       })
       .catch((error) => {
         console.error("Profile fetch error:", error);
       });
-  }, []);
+
+    let intervalId;
+    if (token) {
+      // Initial fetch
+      fetchNotifications();
+
+      // Start polling every 30 seconds
+      intervalId = setInterval(() => {
+        fetchNotifications();
+      }, 30000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [token]);
+
+  const fetchNotifications = async () => {
+    try {
+      // Only show spinner on initial load to avoid flickering during polling
+      if (notifications.length === 0) setIsNotifLoading(true);
+      
+      const res = await getAllnotifications();
+      if (res.status === "success" || res.success) {
+        const newNotifs = res.data.notifications || [];
+        setNotifications(newNotifs);
+        
+        // Calculate unread count
+        const unread = newNotifs.filter(n => !n.read).length;
+        setUnreadCount(unread);
+      }
+    } catch (error) {
+      console.error("Notifications fetch error:", error);
+    } finally {
+      setIsNotifLoading(false);
+    }
+  };
 
   return (
     <>
@@ -121,17 +162,90 @@ export default function Navbar() {
                             : "group-hover:scale-110"
                         }`}
                       />
+                      {/* Unread Badge for Notifications */}
+                      {item.id === "notifications" && unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white shadow-sm transition-transform group-hover:scale-110">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
                       {/* Active Indicator */}
                       {activeLink === item.id && (
                         <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary-600 rounded-full"></span>
                       )}
                     </Link>
 
-                    {/* Tooltip */}
-                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none">
-                      {item.label}
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
-                    </div>
+                    {/* Notification Dropdown */}
+                    {item.id === "notifications" && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-80 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:mt-2 transition-all duration-300 z-50">
+                        {/* Arrow */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-gray-100 rotate-45"></div>
+                        
+                        {/* Content Card */}
+                        <div className="relative backdrop-blur-xl bg-white/95 border border-gray-100 rounded-2xl shadow-2xl overflow-hidden">
+                          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                            <h3 className="font-bold text-gray-900">Notifications</h3>
+                            <button className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors">Mark all as read</button>
+                          </div>
+
+                          <div className="max-h-96 overflow-y-auto custom-scrollbar">
+                            {isNotifLoading ? (
+                              <div className="p-10 flex flex-col items-center justify-center gap-3">
+                                <div className="w-6 h-6 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+                                <p className="text-xs text-gray-400">Loading notifications...</p>
+                              </div>
+                            ) : notifications.length > 0 ? (
+                              <div className="divide-y divide-gray-50">
+                                {notifications.map((notif) => (
+                                  <Link
+                                    key={notif._id}
+                                    to={notif.link || "/notifications"}
+                                    className={`flex gap-4 px-5 py-4 hover:bg-primary-50/50 transition-colors ${!notif.read ? 'bg-primary-50/20' : ''}`}
+                                  >
+                                    <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${!notif.read ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
+                                      <FontAwesomeIcon icon={faBell} className="text-sm" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className={`text-sm leading-tight mb-1 ${!notif.read ? 'text-gray-900 font-bold' : 'text-gray-600 font-medium'}`}>
+                                        {notif.heading || "Notification"}
+                                      </p>
+                                      <p className="text-xs text-gray-500 line-clamp-2 mb-1.5">{notif.text}</p>
+                                      <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+                                        <FontAwesomeIcon icon={faClock} className="text-[8px]" />
+                                        <span>{notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true }) : "recently"}</span>
+                                        {!notif.read && <span className="w-1.5 h-1.5 bg-primary-500 rounded-full ml-auto"></span>}
+                                      </div>
+                                    </div>
+                                  </Link>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="p-10 text-center">
+                                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-300">
+                                  <FontAwesomeIcon icon={faBell} className="text-xl" />
+                                </div>
+                                <p className="text-sm font-medium text-gray-900 mb-1">No notifications yet</p>
+                                <p className="text-xs text-gray-500">When you get notifications, they'll show up here.</p>
+                              </div>
+                            )}
+                          </div>
+
+                          <Link
+                            to="/notifications"
+                            className="block py-3.5 text-center text-sm font-bold text-gray-600 hover:text-primary-600 hover:bg-gray-50 transition-all duration-200 border-t border-gray-100"
+                          >
+                            View All Notifications
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tooltip (Only for non-notification items) */}
+                    {item.id !== "notifications" && (
+                      <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap pointer-events-none">
+                        {item.label}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      </div>
+                    )}
                   </li>
                 ))}
 
@@ -190,16 +304,16 @@ export default function Navbar() {
                     </Link>
 
                     <Link
-                      to="/personalized"
+                      to="/connections/all"
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-primary-50 hover:text-primary-600 transition-colors duration-200"
                     >
                       <FontAwesomeIcon
-                        icon={faHeart}
+                        icon={faUsers}
                         className="text-primary-500 w-4"
                       />
                       <span className="font-medium text-sm">
-                        Personalized Opportunities
+                         Your connections
                       </span>
                     </Link>
                   </div>

@@ -1,13 +1,13 @@
 import { apiClient } from "./api-client"
 
-export async function getMyApplications () {
+export async function getAllnotifications(){
     try {
         const options= {
             method:"GET",
-            url:`/applications/my-applications`
+            url:"/notifications/"
         }
         const response = await apiClient.request(options);
-        
+        console.log(response);
         return response;
     } catch (error) {
         throw(error)

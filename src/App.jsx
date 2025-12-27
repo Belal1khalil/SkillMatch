@@ -21,6 +21,12 @@ import OpportunityDetails from "./Pages/OpportunityDetails/OpportunityDetails";
 import OpportunityProvider from "./Components/Context/OpportunityContext";
 import SavedOpportunities from "./Pages/SavedOpportunities/SavedOpportunities";
 import MyApplications from "./Pages/MyAppllications/MyApplications";
+import ProfileDetails from "./Pages/Profiledetail/ProfileDetails";
+import ConnectionLayout from "./Components/ConnectionLayout/ConnectionLayout";
+import PendeingConnection from "./Pages/Pending/PendeingConnection";
+import RejectedConnection from "./Pages/Rejected/RejectedConnection";
+import AllConnections from "./Pages/AllConnections/AllConnections";
+import Notificitions from "./Pages/Notificitions/Notificitions";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -88,9 +94,36 @@ export default function App() {
           path: "applications",
           element: (
             <ProtectedRoute>
-                <MyApplications/>
+              <MyApplications />
             </ProtectedRoute>
           ),
+        },
+        {
+          path: "/profile/:id",
+          element: (
+            <ProtectedRoute>
+              <ProfileDetails />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path: "connections",
+          element: (
+            <ProtectedRoute>
+              <ConnectionLayout />
+            </ProtectedRoute>
+          ),
+          children:[
+             {path:"all" , element:<AllConnections/>},
+            {path:"pending" , element:<PendeingConnection/>},
+            {path:"rejected" , element:<RejectedConnection/>},
+          ]
+        },
+        {
+          path:"notifications",
+          element:<ProtectedRoute>
+            <Notificitions/>
+          </ProtectedRoute>
         }
       ],
     },
