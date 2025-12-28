@@ -21,11 +21,7 @@ export default function ConnectionLayout() {
       label: "Pending Requests",
       icon: faClock,
     },
-    {
-      to: "/connections/rejected",
-      label: "Rejected Requests",
-      icon: faUserTimes,
-    },
+
   ];
 
   return (

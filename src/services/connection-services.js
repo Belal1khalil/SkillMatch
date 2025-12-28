@@ -21,7 +21,7 @@ export async function getAllConnections() {
       method: "GET",
     };
     const response = await apiClient.request(options);
-    console.log(response)
+
     return response;
   } catch (error) {
     throw error;
@@ -45,6 +45,35 @@ export async function sendConnectionRequest(id) {
   }
 }
 
+
+export async function acceptConnectionrequest(id) {
+  try {
+    const options= {
+      method:"POST",
+      url:`/connections/${id}/accept`
+    }
+    const response = await apiClient.request(options);
+    return response;
+  } catch (error) {
+    throw(error)
+  }
+} 
+
+export async function rejectConnectionrequest(id) {
+  try {
+    const options= {
+      method:"POST",
+      url:`/connections/${id}/reject`
+    }
+    const response = await apiClient.request(options);
+    console.log(response)
+    return response;
+  } catch (error) {
+    throw(error)
+  }
+} 
+
+
 export async function getConnectionStatus(id) {
   try {
     const options = {
@@ -52,6 +81,7 @@ export async function getConnectionStatus(id) {
       url: `/connections/status/${id}`,
     };
     const response = await apiClient.request(options);
+
     return response;
   } catch (error) {
     throw error;

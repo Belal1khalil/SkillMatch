@@ -533,43 +533,11 @@ export default function Navbar() {
                 </nav>
               )}
 
-              {/* Divider */}
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+         
 
-              {/* Profile Section */}
-              {token && (
-                <Link
-                onClick={toggleMenu}
-                  to="/profile"
-                  className="flex items-center gap-4 px-4 py-3 rounded-xl bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 transition-all duration-300"
-                >
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <FontAwesomeIcon icon={faUser} className="text-lg" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold">My Profile</p>
-                    <p className="text-xs text-white/80">
-                      View and edit profile
-                    </p>
-                  </div>
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </Link>
-              )}
+             
 
-              {/* Divider */}
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+           
 
               {/* Login & Signup Buttons */}
               {!token && (

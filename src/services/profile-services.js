@@ -55,9 +55,10 @@ export async function discoverPersons() {
     try {
         const options= {
             method: "GET",
-            url: `/auth/discover`,
+            url: `/auth/discover?limit=50`,
         }
         const response = await apiClient.request(options);
+        console.log("users", response)
  
         return response;
     } catch (error) {
@@ -125,7 +126,6 @@ export async function getSpecificUser(id) {
      method:"GET",
     };
     const response = await apiClient.request(options);
-    console.log(response);
     return response;
   } catch (error) {
     throw(error)

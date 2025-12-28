@@ -30,19 +30,16 @@ export default function Discover() {
       });
   }, []);
 
-  // Save sent connection IDs to localStorage whenever it changes
-
-
-  // Filter by search query only (don't filter out sent connections until refresh)
+  // Filter by search query only
   const filteredPersons = discoveredPersons
     .filter((person) => {
       const query = searchQuery.toLowerCase();
       return (
         person.username?.toLowerCase().includes(query) ||
         person.email?.toLowerCase().includes(query) 
-      
       );
     });
+
 
   if (loading) {
     return (
@@ -91,7 +88,9 @@ export default function Discover() {
                   placeholder="Search by name, expertise, or location..."
                   className="w-full pl-16 pr-8 py-6 bg-transparent outline-none text-gray-800 font-bold placeholder-gray-400 text-xl"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                  }}
                 />
               </div>
             </div>

@@ -73,19 +73,19 @@ export default function UserCard({ userInfo, onConnect, onConnectionSent }) {
           <div className="flex gap-3 w-full">
             <button
               onClick={() => handleSendConnection(userInfo._id)}
-              disabled={connectionStatus === 'pending' || isLoading}
+              disabled={connectionStatus === 'pending' || connectionStatus === 'sent' || isLoading}
               className={`flex-1 font-bold py-3 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm ${
-                connectionStatus === 'pending'
+                connectionStatus === 'pending' || connectionStatus === 'sent'
                   ? 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-yellow-500/20 cursor-not-allowed'
                   : connectionStatus === 'accepted'
                   ? 'bg-green-600 hover:bg-green-700 text-white shadow-green-500/20'
                   : 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-500/20 active:scale-95'
               }`}
             >
-              <FontAwesomeIcon icon={connectionStatus === "pending" ? faClock :connectionStatus === "accepted"? faCheck :faUserPlus}  className="text-xs" />
+              <FontAwesomeIcon icon={connectionStatus === "pending" || connectionStatus === "sent" ? faClock :connectionStatus === "accepted"? faCheck :faUserPlus}  className="text-xs" />
               {isLoading
                 ? 'Sending...'
-                : connectionStatus === 'pending'
+                : connectionStatus === 'pending' || connectionStatus === 'sent'
                 ? 'Pending'
                 : connectionStatus === 'accepted'
                 ? 'Connected'

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { AuthContext } from './AuthContext';
-import { getAllnotifications } from '../../services/notificitions-services';
+import { getAllnotifications, markNotificationAsRead } from '../../services/notificitions-services';
 
 const SocketContext = createContext();
 
@@ -44,7 +44,7 @@ export const SocketProvider = ({ children }) => {
             });
 
             newSocket.on('connect', () => {
-                console.log('Connected to socket server');
+                // console.log('Connected to socket server');
             });
 
             newSocket.on('notification', (notification) => {

@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { useSocket } from "../../Components/Context/SocketContext";
-import { acceptConnection, rejectConnection } from "../../services/connection-services";
+import { acceptConnection, acceptConnectionrequest, rejectConnection, rejectConnectionrequest } from "../../services/connection-services";
 import { markAllNotificationsAsRead } from "../../services/notificitions-services";
 import toast from "react-hot-toast";
 import userImg from '../../assets/imgs/user.png';
@@ -36,7 +36,7 @@ const Notificitions = () => {
 
     setProcessing((prev) => ({ ...prev, [notification._id]: true }));
     try {
-      const res = await acceptConnection(connectionId);
+      const res = await acceptConnectionrequest(connectionId);
       if (res.success) {
         toast.success("Connection request accepted!");
         await markAsRead(notification._id);
@@ -61,7 +61,7 @@ const Notificitions = () => {
 
     setProcessing((prev) => ({ ...prev, [notification._id]: true }));
     try {
-      const res = await rejectConnection(connectionId);
+      const res = await rejectConnectionrequest(connectionId);
       if (res.success) {
         toast.success("Connection request rejected");
         await markAsRead(notification._id);

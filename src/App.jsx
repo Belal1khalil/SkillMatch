@@ -24,10 +24,11 @@ import MyApplications from "./Pages/MyAppllications/MyApplications";
 import ProfileDetails from "./Pages/Profiledetail/ProfileDetails";
 import ConnectionLayout from "./Components/ConnectionLayout/ConnectionLayout";
 import PendeingConnection from "./Pages/Pending/PendeingConnection";
-import RejectedConnection from "./Pages/Rejected/RejectedConnection";
+
 import AllConnections from "./Pages/AllConnections/AllConnections";
 import Notificitions from "./Pages/Notificitions/Notificitions";
 import { SocketProvider } from "./Components/Context/SocketContext";
+import NotFound from "./Pages/NotFound/NotFound";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -39,7 +40,14 @@ export default function App() {
         { path: "signup", element: <Signup /> },
         { path: "login", element: <Login /> },
         { path: "verifycode", element: <VerifyCode /> },
-        { path: "dashboard", element: <Dashboard /> },
+        {
+          path: "dashboard",
+          element: (
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          ),
+        },
         { path: "forgot-password", element: <ForgetPassword /> },
         { path: "verifyResetCode", element: <VerifyResetCode /> },
         { path: "resetPassword", element: <ResetPassword /> },
@@ -114,17 +122,22 @@ export default function App() {
               <ConnectionLayout />
             </ProtectedRoute>
           ),
-          children:[
-             {path:"all" , element:<AllConnections/>},
-            {path:"pending" , element:<PendeingConnection/>},
-            {path:"rejected" , element:<RejectedConnection/>},
-          ]
+          children: [
+            { path: "all", element: <AllConnections /> },
+            { path: "pending", element: <PendeingConnection /> },
+          ],
         },
         {
-          path:"notifications",
-          element:<ProtectedRoute>
-            <Notificitions/>
-          </ProtectedRoute>
+          path: "notifications",
+          element: (
+            <ProtectedRoute>
+              <Notificitions />
+            </ProtectedRoute>
+          ),
+        },
+        {
+          path:"*",
+          element:<NotFound/>
         }
       ],
     },

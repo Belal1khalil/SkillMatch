@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { getSpecificUser } from '../../services/profile-services';
-import { useParams } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useEffect, useState } from "react";
+import { getSpecificUser } from "../../services/profile-services";
+import { useParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faEnvelope,
@@ -15,12 +15,16 @@ import {
   faUserCircle,
   faSpinner,
   faUserPlus,
-  faClock
-} from '@fortawesome/free-solid-svg-icons';
-import { toast } from 'react-toastify';
-import { sendConnectionRequest, getConnectionStatus } from '../../services/connection-services';
-import userImg from '../../assets/imgs/user.png';
-import { useNavigate } from 'react-router-dom';
+  faClock,
+  faUserTimes,
+} from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
+import {
+  sendConnectionRequest,
+  getConnectionStatus,
+} from "../../services/connection-services";
+import userImg from "../../assets/imgs/user.png";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileDetails() {
   const { id } = useParams();
@@ -36,14 +40,19 @@ export default function ProfileDetails() {
       setLoading(true);
       setError(null);
       const response = await getSpecificUser(id);
-      console.log(response);
       if (response.success) {
         setUserData(response.data.user);
+        // Check if status is included in specific user response
+        const status =
+          response.data?.user?.connectionStatus || response.data?.status;
+        if (status && status !== "success") {
+          setConnectionStatus(status);
+        }
       }
       setLoading(false);
     } catch (error) {
       console.log(error);
-      setError(error?.response?.data?.message || 'Failed to load user profile');
+      setError(error?.response?.data?.message || "Failed to load user profile");
       setLoading(false);
     }
   }
@@ -53,12 +62,22 @@ export default function ProfileDetails() {
       setIsConnectionLoading(true);
       const response = await sendConnectionRequest(id);
       if (response.success) {
-        setConnectionStatus(response.data.connection.status);
-        toast.success(response.data.message || 'Connection request sent!');
+        // Handle structural differences in connection response
+        const status =
+          response.data?.connection?.status ||
+          response.data?.data?.connectionStatus ||
+          response.data?.status;
+
+        if (status && status !== "success") {
+          setConnectionStatus(status);
+        }
+        toast.success(response.data.message || "Connection request sent!");
       }
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.message || 'Failed to send connection request');
+      toast.error(
+        error?.response?.data?.message || "Failed to send connection request"
+      );
     } finally {
       setIsConnectionLoading(false);
     }
@@ -66,16 +85,31 @@ export default function ProfileDetails() {
 
   useEffect(() => {
     handleGetSpecificuser(id);
-    
-    // Fetch connection status
+
+    // Also fetch dedicated status just in case it's not in the user object
     if (id) {
       getConnectionStatus(id)
-        .then(res => {
-          if (res.success && res.data?.status) {
-            setConnectionStatus(res.data.status);
+        .then((res) => {
+          console.log("Dedicated connection status:", res);
+          // Prioritize connectionStatus from nested data, then fallback to other structures
+          const status =
+            res.data?.data?.connectionStatus ||
+            res.data?.status ||
+            res.data?.connection?.status;
+
+          // Ensure we don't set "success" as the status (api status field often returns "success")
+          if (
+            res.success &&
+            status &&
+            status !== "success" &&
+            status !== "not_found"
+          ) {
+            setConnectionStatus(status);
           }
         })
-        .catch(err => console.log('No connection status found:', err));
+        .catch((err) => {
+          console.log("No dedicated connection status:", err);
+        });
     }
   }, [id]);
 
@@ -108,10 +142,15 @@ export default function ProfileDetails() {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-8 bg-gray-50/50 px-4">
         <div className="w-32 h-32 bg-red-50 rounded-[3rem] flex items-center justify-center">
-          <FontAwesomeIcon icon={faUserCircle} className="text-6xl text-red-300" />
+          <FontAwesomeIcon
+            icon={faUserCircle}
+            className="text-6xl text-red-300"
+          />
         </div>
         <div className="text-center">
-          <h2 className="text-3xl font-black text-gray-900 mb-4">Profile Not Found</h2>
+          <h2 className="text-3xl font-black text-gray-900 mb-4">
+            Profile Not Found
+          </h2>
           <p className="text-gray-500 font-medium mb-8">{error}</p>
           <button
             onClick={() => navigate(-1)}
@@ -136,12 +175,12 @@ export default function ProfileDetails() {
 
   // Profile Data
   const userProfile = {
-    username: userData?.username || 'User Name',
-    email: userData?.email || 'email@example.com',
-    role: userData?.role || 'Professional',
-    phone: userData?.phone || 'Not provided',
-    location: userData?.location || 'Remote',
-    bio: userData?.bio || 'No bio provided.',
+    username: userData?.username || "User Name",
+    email: userData?.email || "email@example.com",
+    role: userData?.role || "Professional",
+    phone: userData?.phone || "Not provided",
+    location: userData?.location || "Remote",
+    bio: userData?.bio || "No bio provided.",
     skills: userData?.skills || [],
     interests: userData?.interests || [],
     profilePic: userData?.photo || userImg,
@@ -163,7 +202,10 @@ export default function ProfileDetails() {
             onClick={() => navigate(-1)}
             className="group px-6 py-3 bg-white/10 backdrop-blur-md text-white font-bold rounded-2xl hover:bg-white/20 transition-all flex items-center gap-3 border border-white/20"
           >
-            <FontAwesomeIcon icon={faArrowLeft} className="group-hover:-translate-x-1 transition-transform" />
+            <FontAwesomeIcon
+              icon={faArrowLeft}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             Back
           </button>
         </div>
@@ -185,19 +227,29 @@ export default function ProfileDetails() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <img src={userImg} alt="userProfile" className="w-full h-full object-cover" />
+                      <img
+                        src={userImg}
+                        alt="userProfile"
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </div>
                 </div>
 
                 <h2 className="text-2xl font-bold text-gray-900 mb-1 flex items-center justify-center gap-2">
                   {userProfile.username}
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-primary-500 text-lg" />
+                  <FontAwesomeIcon
+                    icon={faCheckCircle}
+                    className="text-primary-500 text-lg"
+                  />
                 </h2>
 
                 <div className="flex justify-center gap-2 mb-8">
                   <span className="px-4 py-1.5 bg-gray-50 text-gray-500 rounded-full text-[11px] font-bold flex items-center gap-1.5 border border-gray-100">
-                    <FontAwesomeIcon icon={faMapMarkerAlt} className="text-primary-400" />
+                    <FontAwesomeIcon
+                      icon={faMapMarkerAlt}
+                      className="text-primary-400"
+                    />
                     {userProfile.location}
                   </span>
                 </div>
@@ -216,7 +268,10 @@ export default function ProfileDetails() {
                   <ul className="space-y-5">
                     <li className="flex items-center gap-4 group cursor-pointer">
                       <div className="w-11 h-11 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-primary-50 group-hover:text-primary-600 transition-all">
-                        <FontAwesomeIcon icon={faEnvelope} className="text-sm" />
+                        <FontAwesomeIcon
+                          icon={faEnvelope}
+                          className="text-sm"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
@@ -247,32 +302,47 @@ export default function ProfileDetails() {
                 <div className="pt-2">
                   <button
                     onClick={handleSendConnection}
-                    disabled={connectionStatus === 'pending' || isConnectionLoading}
+                    disabled={
+                      connectionStatus === "pending" ||
+                      connectionStatus === "sent" ||
+                      connectionStatus === "accepted" ||
+                      connectionStatus === "rejected" ||
+                      isConnectionLoading
+                    }
                     className={`w-full py-4 px-6 rounded-2xl font-bold shadow-lg transition-all flex items-center justify-center gap-3 active:scale-95 text-base ${
-                      connectionStatus === 'pending'
-                        ? 'bg-yellow-500 text-white shadow-yellow-500/20 cursor-not-allowed hover:bg-yellow-600'
-                        : connectionStatus === 'accepted'
-                        ? 'bg-green-600 text-white shadow-green-500/20 hover:bg-green-700'
-                        : 'bg-primary-600 text-white shadow-primary-500/30 hover:bg-primary-700'
+                      connectionStatus === "pending" ||
+                      connectionStatus === "sent"
+                        ? "bg-yellow-500 text-white shadow-yellow-500/20 cursor-not-allowed hover:bg-yellow-600"
+                        : connectionStatus === "accepted"
+                        ? "bg-green-600 text-white shadow-green-500/20 hover:bg-green-700"
+                        : connectionStatus === "rejected"
+                        ? " disabled cursor-no-drop bg-red-600 text-white shadow-red-500/20 hover:bg-red-700"
+                        : "bg-primary-600 text-white shadow-primary-500/30 hover:bg-primary-700"
                     }`}
                   >
-                    <FontAwesomeIcon 
+                    <FontAwesomeIcon
                       icon={
-                        connectionStatus === 'pending' 
-                          ? faClock 
-                          : connectionStatus === 'accepted' 
-                          ? faCheckCircle 
+                        connectionStatus === "pending" ||
+                        connectionStatus === "sent"
+                          ? faClock
+                          : connectionStatus === "accepted"
+                          ? faCheckCircle
+                          : connectionStatus === "rejected"
+                          ? faUserTimes
                           : faUserPlus
-                      } 
+                      }
                       className="text-lg"
                     />
                     {isConnectionLoading
-                      ? 'Sending...'
-                      : connectionStatus === 'pending'
-                      ? 'Request Pending'
-                      : connectionStatus === 'accepted'
-                      ? 'Connected'
-                      : 'Connect'}
+                      ? "Sending..."
+                      : connectionStatus === "pending" ||
+                        connectionStatus === "sent"
+                      ? "Request Pending"
+                      : connectionStatus === "accepted"
+                      ? "Connected"
+                      : connectionStatus === "rejected"
+                      ? "rejected"
+                      : "Connect"}
                   </button>
                 </div>
               </div>
@@ -301,13 +371,19 @@ export default function ProfileDetails() {
               <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
-                    <FontAwesomeIcon icon={faGraduationCap} className="text-sm" />
+                    <FontAwesomeIcon
+                      icon={faGraduationCap}
+                      className="text-sm"
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-gray-900">
                     Expertise & Skills
                   </h3>
                 </div>
-                <FontAwesomeIcon icon={faBriefcase} className="text-primary-100 text-2xl" />
+                <FontAwesomeIcon
+                  icon={faBriefcase}
+                  className="text-primary-100 text-2xl"
+                />
               </div>
               <div className="flex flex-wrap gap-4">
                 {userProfile.skills.length > 0 ? (
@@ -333,7 +409,9 @@ export default function ProfileDetails() {
                     <div className="w-10 h-10 bg-pink-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-pink-500/20">
                       <FontAwesomeIcon icon={faHeart} className="text-sm" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">Interests</h3>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Interests
+                    </h3>
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-4">
