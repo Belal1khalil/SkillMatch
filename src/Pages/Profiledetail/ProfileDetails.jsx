@@ -90,7 +90,7 @@ export default function ProfileDetails() {
     if (id) {
       getConnectionStatus(id)
         .then((res) => {
-          console.log("Dedicated connection status:", res);
+ ;
           // Prioritize connectionStatus from nested data, then fallback to other structures
           const status =
             res.data?.data?.connectionStatus ||

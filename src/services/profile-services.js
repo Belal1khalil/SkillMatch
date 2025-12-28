@@ -51,14 +51,14 @@ export async function updateMyPassword(values) {
 }
 
 
-export async function discoverPersons() {
+export async function discoverPersons(page, limit) {
     try {
         const options= {
             method: "GET",
-            url: `/auth/discover?limit=50`,
+            url: `/auth/discover?page=${page}&limit=${limit}`,
         }
         const response = await apiClient.request(options);
-        console.log("users", response)
+
  
         return response;
     } catch (error) {

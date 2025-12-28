@@ -6,31 +6,47 @@ import {
   faSearch,
   faUsers,
   faCompass,
+  faLeftLong,
+  faArrowLeft,
+  faArrowRight,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import UserCard from "../../Components/UserCard/UserCard";
+import { faArrowAltCircleLeft, faCircleLeft } from "@fortawesome/free-regular-svg-icons";
 
 export default function Discover() {
   const [discoveredPersons, setDiscoveredPersons] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [page , setPage] = useState(1);
+  const [totalPages ,setTotalPages] = useState(1);
+  const limit = 8
 
 
   useEffect(() => {
     setLoading(true);
-    discoverPersons()
+    discoverPersons(page , limit)
       .then((res) => {
-        console.log(res)
         setDiscoveredPersons(res.data.users);
+        setTotalPages(res.data.totalPages||1)
         setLoading(false);
       })
       .catch((err) => {
         console.log(err);
         setLoading(false);
       });
-  }, []);
+  }, [page, limit]);
 
-  // Filter by search query only
+  // Handle page change
+    const handlePageChange  = (newPage)=>{
+      if(newPage >= 1 && newPage <= totalPages) {
+        setPage(newPage)
+      window.scrollTo({ top: 300, behavior: 'smooth' });
+      }
+    }
+ 
+
+  // Filter by search query (note: server-side search would be better, but keeping existing client-side logic for now)
   const filteredPersons = discoveredPersons
     .filter((person) => {
       const query = searchQuery.toLowerCase();
@@ -90,6 +106,7 @@ export default function Discover() {
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
+                    setPage(1);
                   }}
                 />
               </div>
@@ -138,6 +155,53 @@ export default function Discover() {
             <NotFound />
           )}
         </div>
+
+        {/* Numbered Pagination UI */}
+        {totalPages > 1 && (
+          <div className="mt-24 flex flex-col items-center gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page === 1}
+                className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-primary-600 hover:border-primary-200 disabled:opacity-30 disabled:hover:border-gray-100 disabled:hover:text-gray-400 transition-all shadow-sm hover:shadow-md active:scale-90"
+              >
+              
+                <FontAwesomeIcon icon={faArrowLeft}/>
+              </button>
+
+              <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm">
+                {[...Array(totalPages)].map((_, index) => {
+                  const pageNumber = index + 1;
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => handlePageChange(pageNumber)}
+                      className={`w-12 h-12 rounded-xl text-sm font-black transition-all duration-300 ${
+                        page === pageNumber
+                          ? "bg-primary-600 text-white shadow-lg shadow-primary-500/30 scale-105"
+                          : "text-gray-400 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+              </div>
+            
+
+              <button
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page === totalPages}
+                className="w-14 h-14 flex items-center justify-center rounded-2xl bg-white border border-gray-100 text-gray-400 hover:text-primary-600 hover:border-primary-200 disabled:opacity-30 disabled:hover:border-gray-100 disabled:hover:text-gray-400 transition-all shadow-sm hover:shadow-md active:scale-90"
+              >
+                            <FontAwesomeIcon icon={faArrowRight}/>
+              </button>
+            </div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+              Page {page} of {totalPages}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

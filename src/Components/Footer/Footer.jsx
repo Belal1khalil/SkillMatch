@@ -41,16 +41,28 @@ export default function Footer() {
             {/* Social Media Links */}
             <div className="flex items-center gap-3">
               {[
-                { icon: faFacebookF, href: "#", label: "Facebook" },
-                { icon: faTwitter, href: "#", label: "Twitter" },
-                { icon: faLinkedinIn, href: "#", label: "LinkedIn" },
-                { icon: faInstagram, href: "#", label: "Instagram" },
-                { icon: faGithub, href: "#", label: "GitHub" },
+                { 
+                  icon: faFacebookF, 
+                  href: "https://www.facebook.com/belal.khalil.235235/", 
+                  label: "Facebook" 
+                },
+                { 
+                  icon: faLinkedinIn, 
+                  href: "https://www.linkedin.com/in/belal-5halil", 
+                  label: "LinkedIn" 
+                },
+                { 
+                  icon: faGithub, 
+                  href: "https://github.com/Belal1khalil", 
+                  label: "GitHub" 
+                },
               ].map((social, index) => (
                 <a
                   key={index}
                   href={social.href}
                   aria-label={social.label}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-primary-500 hover:text-white hover:border-primary-500 hover:shadow-lg hover:shadow-primary-500/30 transition-all duration-300 hover:-translate-y-1"
                 >
                   <FontAwesomeIcon icon={social.icon} className="text-sm" />

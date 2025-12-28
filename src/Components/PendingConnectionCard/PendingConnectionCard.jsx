@@ -1,34 +1,14 @@
-import  { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck,  } from '@fortawesome/free-solid-svg-icons';
-
+import {  faUserPlus, faUserTimes,  } from '@fortawesome/free-solid-svg-icons';
 import { toast } from 'react-toastify';
-import { faClock } from '@fortawesome/free-regular-svg-icons';
+import { acceptConnectionrequest, rejectConnectionrequest } from '../../services/connection-services';
 
-export default function PendingConnectionCard({ connection, onAction }) {
-  const [loadingAction, setLoadingAction] = useState(null);
+export default function PendingConnectionCard({ connection , handleAcceptConnection , handleRejectConnection }) {
 
-  const handleAction = async (action) => {
-    try {
-      setLoadingAction(action);
-      let response;
-      if (action === 'accept') {
-        response = await acceptConnectionRequest(connection._id);
-      } else {
-        response = await rejectConnectionRequest(connection._id);
-      }
 
-      if (response.success) {
-        toast.success(action === 'accept' ? 'Connection accepted!' : 'Request rejected.');
-        if (onAction) onAction(connection._id);
-      }
-    } catch (error) {
-       console.error(error);
-       toast.error(`Failed to ${action} request`);
-    } finally {
-      setLoadingAction(null);
-    }
-  };
+
+
+ 
 
   // const receiver = connection.sender;
 
@@ -42,11 +22,11 @@ export default function PendingConnectionCard({ connection, onAction }) {
         <div className="relative mb-4">
           <div className="w-24 h-24 rounded-[1.75rem] overflow-hidden border-4 border-white shadow-lg shadow-gray-200/50">
             <img 
-               src={`https://skillmatch.elmihy.me/api/img/users/${connection.receiver?.photo}`} 
-               alt={connection.receiver?.username}
+               src={`https://skillmatch.elmihy.me/api/img/users/${connection.sender?.photo}`} 
+               alt={connection.sender?.username}
                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                onError={(e) => {
-                 e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(receiver?.username) + '&background=f3f4f6&color=6b7280';
+                 e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(sender?.username) + '&background=f3f4f6&color=6b7280';
                }}
             />
           </div>
@@ -57,7 +37,7 @@ export default function PendingConnectionCard({ connection, onAction }) {
         {/* User Info */}
         <div className="text-center w-full px-2 mb-6">
           <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors truncate">
-            {connection.receiver?.username}
+            {connection.sender?.username}
           </h3>
         
           <div className="mt-3 text-xs font-semibold text-gray-500 bg-gray-50 py-1 px-3 rounded-full inline-block border border-gray-100">
@@ -68,11 +48,22 @@ export default function PendingConnectionCard({ connection, onAction }) {
         {/* Action Buttons */}
         <div className="flex gap-3 w-full">
           <button
-          disabled
-            className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+           onClick={()=>{
+            handleAcceptConnection(connection?._id)
+           }}
+            className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            <FontAwesomeIcon icon={faClock} />
-             Pending
+            <FontAwesomeIcon icon={faUserPlus} />
+             Accept
+          </button>
+          <button
+           onClick={()=>{
+            handleRejectConnection(connection?._id)
+           }}
+            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-green-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            <FontAwesomeIcon icon={faUserTimes} />
+             Reject
           </button>
           
      

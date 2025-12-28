@@ -53,6 +53,7 @@ export async function acceptConnectionrequest(id) {
       url:`/connections/${id}/accept`
     }
     const response = await apiClient.request(options);
+
     return response;
   } catch (error) {
     throw(error)
@@ -66,7 +67,7 @@ export async function rejectConnectionrequest(id) {
       url:`/connections/${id}/reject`
     }
     const response = await apiClient.request(options);
-    console.log(response)
+
     return response;
   } catch (error) {
     throw(error)

@@ -19,13 +19,14 @@ import { useSocket } from "../Context/SocketContext";
 import { acceptConnection, rejectConnection } from "../../services/connection-services";
 import { toast } from "react-hot-toast";
 import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import { markNotificationAsRead } from "../../services/notificitions-services";
 
 export default function Navbar() {
   const [activeLink, setActiveLink] = useState("discover");
   const [isMenuopen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { token, Logout } = useContext(AuthContext);
-  const { notifications, unreadCount, markAsRead, removeNotification, loading: isNotifLoading } = useSocket();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification, loading: isNotifLoading } = useSocket();
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("Guest");
   const [processing, setProcessing] = useState({});
@@ -192,7 +193,20 @@ export default function Navbar() {
                         <div className="relative backdrop-blur-xl bg-white/95 border border-gray-100 rounded-2xl shadow-2xl overflow-hidden">
                           <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
                             <h3 className="font-bold text-gray-900">Notifications</h3>
-                            <button className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors">Mark all as read</button>
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (unreadCount > 0) {
+                                  markAllAsRead();
+                                  toast.success("All notifications marked as read");
+                                }
+                              }}
+                              className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              disabled={unreadCount === 0}
+                            >
+                              Mark all as read
+                            </button>
                           </div>
 
                           <div className="max-h-96 overflow-y-auto custom-scrollbar">

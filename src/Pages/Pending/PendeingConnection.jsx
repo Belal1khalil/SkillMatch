@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { getPendingConnections } from '../../services/connection-services';
+import { getPendingConnections, acceptConnectionrequest, rejectConnectionrequest } from '../../services/connection-services';
 import PendingConnectionCard from '../../Components/PendingConnectionCard/PendingConnectionCard';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock, faUserClock } from '@fortawesome/free-solid-svg-icons';
+import { toast } from 'react-toastify';
 
 export default function PendeingConnection() {
   const [connections, setConnections] = useState([]);
@@ -16,7 +17,6 @@ export default function PendeingConnection() {
     try {
       setLoading(true);
       const response = await getPendingConnections();
-      console.log(response)
       if (response.success) {
         setConnections(response.data.connections || []);
       }
@@ -30,6 +30,32 @@ export default function PendeingConnection() {
   const handleActionComplete = (connectionId) => {
     setConnections(prev => prev.filter(c => c._id !== connectionId));
   };
+
+  async function handleAcceptConnection(id) {
+    try {
+      const response = await acceptConnectionrequest(id);
+      if (response.success) {
+        toast.success(response.data.message || "Connection accepted!");
+        handleActionComplete(id);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to accept connection");
+    }
+  }
+
+  async function handleRejectConnection(id) {
+    try {
+      const response = await rejectConnectionrequest(id);
+      if (response.success) {
+        toast.success(response.data.message || "Connection rejected!");
+        handleActionComplete(id);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error?.response?.data?.message || "Failed to reject connection");
+    }
+  }
 
   if (loading) {
     return (
@@ -60,7 +86,8 @@ export default function PendeingConnection() {
             <PendingConnectionCard 
               key={connection._id} 
               connection={connection} 
-              onAction={handleActionComplete}
+              handleAcceptConnection={handleAcceptConnection}
+              handleRejectConnection={handleRejectConnection}
             />
           ))}
         </div>

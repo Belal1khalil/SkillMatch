@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { AuthContext } from './AuthContext';
-import { getAllnotifications, markNotificationAsRead } from '../../services/notificitions-services';
+import { getAllnotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../../services/notificitions-services';
 
 const SocketContext = createContext();
 
@@ -56,7 +56,7 @@ export const SocketProvider = ({ children }) => {
             setSocket(newSocket);
 
             return () => {
-                newSocket.close();
+                if (newSocket) newSocket.close();
             };
         } else {
             setNotifications([]);
@@ -82,6 +82,20 @@ export const SocketProvider = ({ children }) => {
         }
     };
 
+    const markAllAsRead = async () => {
+        try {
+            const res = await markAllNotificationsAsRead();
+            if (res.success) {
+                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                setUnreadCount(0);
+            }
+            return res;
+        } catch (error) {
+            console.error("Failed to mark all as read:", error);
+            throw error;
+        }
+    };
+
     const removeNotification = (id) => {
         setNotifications(prev => prev.filter(n => n._id !== id));
     };
@@ -95,9 +109,9 @@ export const SocketProvider = ({ children }) => {
         loading,
         fetchNotifications,
         markAsRead,
+        markAllAsRead,
         removeNotification
     };
-
 
     return (
         <SocketContext.Provider value={value}>
