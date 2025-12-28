@@ -27,6 +27,7 @@ import PendeingConnection from "./Pages/Pending/PendeingConnection";
 import RejectedConnection from "./Pages/Rejected/RejectedConnection";
 import AllConnections from "./Pages/AllConnections/AllConnections";
 import Notificitions from "./Pages/Notificitions/Notificitions";
+import { SocketProvider } from "./Components/Context/SocketContext";
 
 export default function App() {
   const router = createBrowserRouter([
@@ -132,13 +133,15 @@ export default function App() {
     <>
       <AuthProvider>
         <OpportunityProvider>
-          <RouterProvider router={router} />
-          <ToastContainer
-            position="top-right"
-            closeButton={false}
-            autoClose={3000}
-            closeOnClick={true}
-          />
+          <SocketProvider>
+            <RouterProvider router={router} />
+            <ToastContainer
+              position="top-right"
+              closeButton={false}
+              autoClose={3000}
+              closeOnClick={true}
+            />
+          </SocketProvider>
         </OpportunityProvider>
       </AuthProvider>
     </>

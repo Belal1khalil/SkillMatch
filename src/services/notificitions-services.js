@@ -13,3 +13,29 @@ export async function getAllnotifications(){
         throw(error)
     }
 }
+
+export async function markNotificationAsRead(notificationId) {
+    try {
+        const options = {
+            method: "POST",
+            url: `/notifications/${notificationId}/read`
+        }
+        const response = await apiClient.request(options);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export async function markAllNotificationsAsRead() {
+    try {
+        const options = {
+            method: "POST",
+            url: "/notifications/read-all"
+        }
+        const response = await apiClient.request(options);
+        return response;
+    } catch (error) {
+        throw error;
+    }
+}

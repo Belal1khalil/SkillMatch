@@ -1,7 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logo from "../../assets/imgs/logo.png";
+import userImg from "../../assets/imgs/user.png";
 import { faBell, faHeart, faUser } from "@fortawesome/free-regular-svg-icons";
 import {
+  faClock,
   faBars,
   faBriefcase,
   faRing,
@@ -12,20 +14,21 @@ import { use, useContext, useEffect, useState } from "react";
 import { AuthContext } from "../Context/AuthContext";
 import { Link, useLocation } from "react-router-dom";
 import { getProfileData } from "../../services/profile-services";
-import { getAllnotifications } from "../../services/notificitions-services";
-import { faClock, faDotCircle } from "@fortawesome/free-solid-svg-icons";
 import { formatDistanceToNow } from "date-fns";
+import { useSocket } from "../Context/SocketContext";
+import { acceptConnection, rejectConnection } from "../../services/connection-services";
+import { toast } from "react-hot-toast";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function Navbar() {
   const [activeLink, setActiveLink] = useState("discover");
   const [isMenuopen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { token, Logout } = useContext(AuthContext);
+  const { notifications, unreadCount, markAsRead, removeNotification, loading: isNotifLoading } = useSocket();
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState("Guest");
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isNotifLoading, setIsNotifLoading] = useState(false);
+  const [processing, setProcessing] = useState({});
   
 
   
@@ -56,41 +59,46 @@ export default function Navbar() {
       .catch((error) => {
         console.error("Profile fetch error:", error);
       });
-
-    let intervalId;
-    if (token) {
-      // Initial fetch
-      fetchNotifications();
-
-      // Start polling every 30 seconds
-      intervalId = setInterval(() => {
-        fetchNotifications();
-      }, 30000);
-    }
-
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
   }, [token]);
 
-  const fetchNotifications = async () => {
+  const handleAcceptConnection = async (e, notification) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const connectionId = notification.referenceId;
+    if (!connectionId) return;
+
+    setProcessing((prev) => ({ ...prev, [notification._id]: true }));
     try {
-      // Only show spinner on initial load to avoid flickering during polling
-      if (notifications.length === 0) setIsNotifLoading(true);
-      
-      const res = await getAllnotifications();
-      if (res.status === "success" || res.success) {
-        const newNotifs = res.data.notifications || [];
-        setNotifications(newNotifs);
-        
-        // Calculate unread count
-        const unread = newNotifs.filter(n => !n.read).length;
-        setUnreadCount(unread);
+      const res = await acceptConnection(connectionId);
+      if (res.success) {
+        toast.success("Connection request accepted!");
+        await markAsRead(notification._id);
       }
     } catch (error) {
-      console.error("Notifications fetch error:", error);
+      toast.error("Failed to accept connection");
     } finally {
-      setIsNotifLoading(false);
+      setProcessing((prev) => ({ ...prev, [notification._id]: false }));
+    }
+  };
+
+  const handleRejectConnection = async (e, notification) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const connectionId = notification.referenceId;
+    if (!connectionId) return;
+
+    setProcessing((prev) => ({ ...prev, [notification._id]: true }));
+    try {
+      const res = await rejectConnection(connectionId);
+      if (res.success) {
+        toast.success("Connection request rejected");
+        await markAsRead(notification._id);
+        removeNotification(notification._id);
+      }
+    } catch (error) {
+      toast.error("Failed to reject connection");
+    } finally {
+      setProcessing((prev) => ({ ...prev, [notification._id]: false }));
     }
   };
 
@@ -195,28 +203,88 @@ export default function Navbar() {
                               </div>
                             ) : notifications.length > 0 ? (
                               <div className="divide-y divide-gray-50">
-                                {notifications.map((notif) => (
-                                  <Link
-                                    key={notif._id}
-                                    to={notif.link || "/notifications"}
-                                    className={`flex gap-4 px-5 py-4 hover:bg-primary-50/50 transition-colors ${!notif.read ? 'bg-primary-50/20' : ''}`}
-                                  >
-                                    <div className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center ${!notif.read ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
-                                      <FontAwesomeIcon icon={faBell} className="text-sm" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className={`text-sm leading-tight mb-1 ${!notif.read ? 'text-gray-900 font-bold' : 'text-gray-600 font-medium'}`}>
-                                        {notif.heading || "Notification"}
-                                      </p>
-                                      <p className="text-xs text-gray-500 line-clamp-2 mb-1.5">{notif.text}</p>
-                                      <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
-                                        <FontAwesomeIcon icon={faClock} className="text-[8px]" />
-                                        <span>{notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true }) : "recently"}</span>
-                                        {!notif.read && <span className="w-1.5 h-1.5 bg-primary-500 rounded-full ml-auto"></span>}
+                                {notifications.map((notif) => {
+                                  let title = "New Notification";
+                                  let message = notif.text || "You have a new update";
+                                  const username = notif.actor?.username || "Someone";
+                                  const isProcessing = processing[notif._id];
+
+                                  if (notif.type === 'connection_request') {
+                                    title = "Connection Request";
+                                    message = `${username} sent you a connection request.`;
+                                  } else if (notif.type === 'job_application') {
+                                    title = "Job Application";
+                                    message = `${username} applied for a job.`;
+                                  } else if (notif.type === 'connection_accepted') {
+                                    title = "Connection Accepted";
+                                    message = `${username} accepted your connection request.`;
+                                  }
+
+                                  return (
+                                    <div
+                                      key={notif._id}
+                                      className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-50 last:border-0 ${!notif.isRead ? 'bg-primary-50/20' : ''}`}
+                                      onClick={() => !notif.isRead && notif.type !== 'connection_request' && markAsRead(notif._id)}
+                                    >
+                                      <div className="flex gap-3">
+                                        <div className="shrink-0 relative">
+                                          <div className={`w-10 h-10 rounded-xl overflow-hidden border border-gray-100 flex items-center justify-center ${!notif.isRead ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-400'}`}>
+                                            {notif.actor?.photo ? (
+                                              <img 
+                                                src={`https://skillmatch.elmihy.me/api/img/users/${notif.actor.photo}`} 
+                                                alt={username}
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { e.target.src = userImg; }}
+                                              />
+                                            ) : (
+                                              <FontAwesomeIcon icon={faBell} className="text-sm" />
+                                            )}
+                                          </div>
+                                          {!notif.isRead && (
+                                            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary-500 rounded-full border-2 border-white"></span>
+                                          )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className={`text-xs leading-tight mb-0.5 ${!notif.isRead ? 'text-gray-900 font-bold' : 'text-gray-500 font-medium'}`}>
+                                            {title}
+                                          </p>
+                                          <p className="text-[11px] text-gray-600 line-clamp-2 leading-snug">{message}</p>
+                                          
+                                          {notif.type === 'connection_request' && !notif.isRead && (
+                                            <div className="flex gap-2 mt-2">
+                                              <button 
+                                                onClick={(e) => handleAcceptConnection(e, notif)}
+                                                disabled={isProcessing}
+                                                className="flex-1 py-1 bg-primary-600 text-[10px] text-white font-bold rounded-md hover:bg-primary-700 disabled:opacity-50"
+                                              >
+                                                {isProcessing ? "..." : "Accept"}
+                                              </button>
+                                              <button 
+                                                onClick={(e) => handleRejectConnection(e, notif)}
+                                                disabled={isProcessing}
+                                                className="flex-1 py-1 bg-gray-100 text-[10px] text-gray-700 font-bold rounded-md hover:bg-gray-200 disabled:opacity-50"
+                                              >
+                                                Reject
+                                              </button>
+                                            </div>
+                                          )}
+
+                                          {notif.type === 'connection_request' && notif.isRead && (
+                                            <div className="mt-1 text-[10px] text-green-600 font-bold flex items-center gap-1">
+                                              <FontAwesomeIcon icon={faCheckCircle} className="text-[8px]" />
+                                              Connected
+                                            </div>
+                                          )}
+
+                                          <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-400">
+                                            <FontAwesomeIcon icon={faClock} className="text-[8px]" />
+                                            <span>{notif.createdAt ? formatDistanceToNow(new Date(notif.createdAt), { addSuffix: true }) : "recently"}</span>
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
-                                  </Link>
-                                ))}
+                                  );
+                                })}
                               </div>
                             ) : (
                               <div className="p-10 text-center">
